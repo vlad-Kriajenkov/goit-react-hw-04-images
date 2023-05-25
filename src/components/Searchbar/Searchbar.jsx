@@ -1,47 +1,36 @@
-import React, { Component } from "react";
+import { useState } from "react";
 import css from "./Searchbar.module.css";
 import { BiSearch } from "react-icons/bi";
 
-class Searchbar extends Component {
-  state = {
-    value: "",
+export default function Searchbar({ onSubmit }) {
+  const [name, setName] = useState("");
 
+  const handleChange = (e) => {
+    setName(e.target.value);
   };
-
-  handleChange = (e) => {
-    this.setState({
-      value: e.target.value,
-    });
-  };
-  handleSubmit = (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
 
-    this.props.onSubmit(this.state.value);
-    this.setState({
-      value: "",
-    });
+    onSubmit(name);
+    setName("");
   };
-  render() {
-    return (
-      <header className={css.Searchbar}>
-        <form className={css.SearchForm} onSubmit={this.handleSubmit}>
-          <button type="submit" className={css.SearchFormButton}>
-            <BiSearch />
-          </button>
+  return (
+    <header className={css.Searchbar}>
+      <form className={css.SearchForm} onSubmit={handleSubmit}>
+        <button type="submit" className={css.SearchFormButton}>
+          <BiSearch />
+        </button>
 
-          <input
-            className={css.SearchFormInput}
-            value={this.state.value}
-            onChange={this.handleChange}
-            type="text"
-            autoComplete="off"
-            autoFocus
-            placeholder="Search images and photos"
-          />
-        </form>
-      </header>
-    );
-  }
+        <input
+          className={css.SearchFormInput}
+          value={name}
+          onChange={handleChange}
+          type="text"
+          autoComplete="off"
+          autoFocus
+          placeholder="Search images and photos"
+        />
+      </form>
+    </header>
+  );
 }
-
-export default Searchbar;

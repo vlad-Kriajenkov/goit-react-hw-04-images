@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import { useState, useEffect } from "react";
 import css from "./App.module.css";
 import Searchbar from "../Searchbar/Searchbar";
 import { ImageGallery } from "components/ImageGallery/ImageGallery";
@@ -7,85 +7,67 @@ import { Button } from "components/Button/Button";
 import { InfinitySpin } from "react-loader-spinner";
 import Modal from "components/Modal/Modal";
 
-class App extends Component {
-  state = {
-    nameImg: "",
-    images: [],
-    page: 1,
-    stateInfo: "base",
-    modal: false,
-    imgModal: [],
-  };
-  onSubmit = async (name) => {
+export default function App() {
+  const [nameImg, setNameImg] = useState("");
+  const [images, setImages] = useState([]);
+  const [page, setPage] = useState(1);
+  const [stateRender, setStateRender] = useState("base");
+  const [modal, setModal] = useState(false);
+  const [imgModal, setImgModal] = useState([]);
+
+  const onSubmit = async (name) => {
     try {
-      this.setState({
-        nameImg: name,
-        page: 1,
-        stateInfo: "pending",
-      });
-      const imagesArr = await API.getImages(name);
-      this.setState((prevState) => ({
-        images: imagesArr.hits,
-        page: prevState.page + 1,
-        stateInfo: "resolvd",
-      }));
+      setNameImg(name);
+      setPage(1);
+      setStateRender("pending");
+      const imagesArr = await API.getImage(name);
+      setImages(imagesArr.hits);
+      setPage((preState) => preState + 1);
+      setStateRender("resolvd");
     } catch (error) {
       console.log(error);
     }
   };
 
-  loudeMore = async () => {
-    const { nameImg, page } = this.state;
-
+  const loudeMore = async () => {
     try {
-      const imagesArr = await API.loudeMoore(nameImg, page);
-      this.setState((prevState) => ({
-        images: [...prevState.images, ...imagesArr.hits],
-        page: prevState.page + 1,
-      }));
+      const imagesArr = await API.getImage(nameImg, page);
+      setImages((prevImg) => [...prevImg, ...imagesArr.hits]);
+      setPage((prePage) => prePage + 1);
     } catch (error) {
       console.log(error);
     }
   };
 
-  toggelModal = (idModal) => {
-    const { images } = this.state;
-    const newImgModal = images.filter(image => image.id === idModal )
-    this.setState({
-      imgModal: newImgModal,
-      modal: !this.state.modal,
-    });
- 
+  const toggelModal = (idModal) => {
+    const newImgModal = images.filter((image) => image.id === idModal);
+    setImgModal(newImgModal);
+    setModal(!modal);
   };
 
-  render() {
-    const { images, stateInfo, modal,imgModal } = this.state;
-    if (stateInfo === "base") {
-      return (
-        <div className={css.App}>
-          <Searchbar onSubmit={this.onSubmit} />
-        </div>
-      );
-    }
-    if (stateInfo === "pending") {
-      return (
-        <div className={css.App}>
-          <Searchbar onSubmit={this.onSubmit} />
-          <InfinitySpin width="200" color="#4fa94d" />
-        </div>
-      );
-    }
-    if (stateInfo === "resolvd") {
-      return (
-        <div className={css.App}>
-          <Searchbar onSubmit={this.onSubmit} />
-          <ImageGallery value={images} openModel={this.toggelModal} />
-          {modal && <Modal onClose={this.toggelModal} imgModal={imgModal} />}
-          <Button onLoudeMore={this.loudeMore} />
-        </div>
-      );
-    }
+  if (stateRender === "base") {
+    return (
+      <div className={css.App}>
+        <Searchbar onSubmit={onSubmit} />
+      </div>
+    );
+  }
+  if (stateRender === "pending") {
+    return (
+      <div className={css.App}>
+        <Searchbar onSubmit={onSubmit} />
+        <InfinitySpin width="200" color="#4fa94d" />
+      </div>
+    );
+  }
+  if (stateRender === "resolvd") {
+    return (
+      <div className={css.App}>
+        <Searchbar onSubmit={onSubmit} />
+        <ImageGallery value={images} openModel={toggelModal} />
+        {modal && <Modal onClose={toggelModal} imgModal={imgModal} />}
+        <Button onLoudeMore={loudeMore} />
+      </div>
+    );
   }
 }
-
-export default App;
